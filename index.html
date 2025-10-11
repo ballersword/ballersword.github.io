@@ -29,21 +29,15 @@
       <p>© 2025 Ballersword · 保留所有权利</p>
     </footer>
 
-    <!-- section 模板 -->
+    <!-- section 模板（媒体区 + 文字区） -->
     <template id="work-tpl">
       <section class="work" data-bg="">
         <div class="bg"></div>
         <div class="scrim"></div>
         <div class="inner">
-          <div class="photo-card reveal">
-            <div class="photo-zoom" aria-label="悬停放大查看">
-              <img alt="" loading="lazy" decoding="async" />
-              <div class="exif" role="note">
-                <span class="dot"></span> <span class="focal"></span><span class="divider">·</span>
-                <span class="aperture"></span><span class="divider">·</span>
-                <span class="shutter"></span><span class="divider">·</span>
-                <span class="iso"></span>
-              </div>
+          <div class="media">
+            <div class="photo-group">
+              <!-- JS 动态插入多个 .photo-card -->
             </div>
           </div>
           <aside class="meta reveal delay-1">

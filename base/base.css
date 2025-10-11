@@ -14,7 +14,7 @@
       html, body { height: 100%; }
       body {
         margin: 0;
-        background: #0a0a0a;
+        background: #2e2e2e;
         color: var(--text);
         font: 16px/1.6 ui-sans-serif, -apple-system, Segoe UI, Roboto,
           PingFang SC, Hiragino Sans GB, Microsoft YaHei, Noto Sans CJK, Arial, sans-serif;

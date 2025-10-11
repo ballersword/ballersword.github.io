@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>黑白影调</title>
+    <link rel="preconnect" href="img/0.jpg" crossorigin />
+    <link rel="stylesheet" href="base/base.css" />
+  </head>
+  <body>
+    <header data-bg="img/0.jpg">
+      <div class="bg"></div>
+      <div class="scrim"></div>
+      <h1 class="reveal in-view">摄影作品集</h1>
+      <p class="reveal delay-1 in-view">数据驱动批量渲染 · 懒加载 · 视差仅对可见项生效 · 分批加载 100+ 照片更流畅</p>
+    </header>
+
+    <!-- 容器 -->
+    <main id="gallery"></main>
+
+    <!-- 加载更多 / 无限滚动触发器 -->
+    <div class="toolbar">
+      <button id="loadMore" class="btn">加载更多</button>
+    </div>
+
+    <footer>
+      <div class="bg"></div>
+      <div class="scrim"></div>
+      <p>© 2025 Ballersword · 保留所有权利</p>
+    </footer>
+
+    <!-- section 模板 -->
+    <template id="work-tpl">
+      <section class="work" data-bg="">
+        <div class="bg"></div>
+        <div class="scrim"></div>
+        <div class="inner">
+          <div class="photo-card reveal">
+            <div class="photo-zoom" aria-label="悬停放大查看">
+              <img alt="" />
+              <div class="exif" role="note">
+                <span class="dot"></span> <span class="focal"></span><span class="divider">·</span> <span class="aperture"></span><span class="divider">·</span> <span class="shutter"></span><span class="divider">·</span>
+                <span class="iso"></span>
+              </div>
+            </div>
+          </div>
+          <aside class="meta reveal delay-1">
+            <h2 class="title"></h2>
+            <div class="sub"></div>
+            <p class="desc"></p>
+            <div class="tags"></div>
+          </aside>
+        </div>
+      </section>
+    </template>
+
+    <script src="base/base.js"></script>
+  </body>
+</html>

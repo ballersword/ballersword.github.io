@@ -1,10 +1,6 @@
-/** ===== 1) 你的数据：把 100+ 条塞进 PHOTOS 即可 =====
- * 建议结构：{title, subtitle, desc, tags[], img (清晰图), bg (铺底图), exif:{focal, aperture, shutter, iso}}
- * 如果清晰图与铺底图相同，可只填 img；bg 会自动回退到 img。
- * 尽量提供多尺寸（见 buildSrcSet）以节省流量。
- */
-const PHOTOS = [
-  {
+ /** ===== 1) 你的数据：随时扩充到 100+ ===== */
+     const PHOTOS = [
+        {
     title: " 牢不可破的红白蓝",
     subtitle: "Highland • 35mm • f/5.6",
     desc: "<p>多年以后，面对埃菲尔铁塔，我会想起10多年前第一次玩《红色警戒2》苏军在巴黎建起“大型磁暴线圈”的那个下午……</p><p>第一次去欧洲旅行的人们，首站大概率都会来巴黎，而到了巴黎的首站，大概率都会在这个角度观察一下古斯塔夫先生留下的杰作（去到天津也是，解放桥也是埃菲尔设计的）。</p><p>我还记得当时盯着埃菲尔铁塔过了很长时间，有某个瞬间，脑子里面竟奇怪的闪现了好多苏联式建筑。</p><p>似乎塔尖上插上一颗血红的五角星一点也不违和，甚至更添加了些许威武雄壮。然后脑子里回荡的《马赛曲》自然过渡成了《牢不可破的联盟》，红白蓝三色变成了红黄两色，“自由、平等、博爱”变成了“全世界工人阶级联合起来”，站在战神广场上，仿佛身处红场，耳畔响起了阅兵时候苏联军队震耳欲聋的“乌拉！”。</p><p>这个念头一晃而过，苏联也成为过去式，天空还是蓝色的，塔尖也没有红色五角星……</p>",
@@ -36,150 +32,156 @@ const PHOTOS = [
     img: "img/bw/4.jpg",
     exif: { focal:"24mm", aperture:"f/8", shutter:"4s", iso:"ISO 64" }
   },
-  // … 将你的其余 100+ 项放在这里 …
-];
+      ];
 
-/** ===== 2) 参数：一次渲染多少张；是否开启无限滚动 ===== */
-const BATCH_SIZE = 12;
-const USE_INFINITE_SCROLL = true;
+      /** ===== 2) 参数 ===== */
+      const BATCH_SIZE = 12;
+      const USE_INFINITE_SCROLL = true; // 需要关闭无限滚动时改为 false
 
-/** ===== 3) 工具：构造带尺寸/压缩参数的 URL（以 Unsplash 演示） ===== */
-function buildSrc(urlBase, w=1200){
-  return `${urlBase}?q=80&w=${w}&auto=format&fit=crop`;
-}
-function buildSrcSet(urlBase){
-  const widths = [600, 900, 1200, 1600];
-  return widths.map(w=>`${buildSrc(urlBase,w)} ${w}w`).join(', ');
-}
+      /** ===== 3) 简单的 src/srcset 构造（本地文件可直接用 src；如有多尺寸可自行扩展） ===== */
+      function buildSrc(urlBase, w = 1200) { return urlBase; }
+      function buildSrcSet(urlBase) { return ""; }
 
-/** ===== 4) 渲染逻辑（分批 + 懒加载 + 视差仅作用于可见项） ===== */
-const gallery = document.getElementById('gallery');
-const tpl = document.getElementById('work-tpl');
-let cursor = 0;
+      /** ===== 4) 渲染逻辑（分批 + 懒加载 + 视差仅作用于可见项） ===== */
+      const gallery = document.getElementById('gallery');
+      const tpl = document.getElementById('work-tpl');
+      let cursor = 0;
 
-function renderNextBatch(){
-  const frag = document.createDocumentFragment();
-  const end = Math.min(cursor + BATCH_SIZE, PHOTOS.length);
-  for(let i=cursor; i<end; i++){
-    const data = PHOTOS[i];
-    const node = tpl.content.cloneNode(true);
+      function renderNextBatch(){
+        const frag = document.createDocumentFragment();
+        const end = Math.min(cursor + BATCH_SIZE, PHOTOS.length);
+        for(let i=cursor; i<end; i++){
+          const data = PHOTOS[i];
+          const node = tpl.content.cloneNode(true);
 
-    const section = node.querySelector('section.work');
-    const bgDiv = node.querySelector('.bg');
-    const imgEl = node.querySelector('img');
-    const title = node.querySelector('.title');
-    const sub = node.querySelector('.sub');
-    const desc = node.querySelector('.desc');
-    const tags = node.querySelector('.tags');
+          const section = node.querySelector('section.work');
+          const bgDiv = node.querySelector('.bg');
+          const imgEl = node.querySelector('img');
+          const title = node.querySelector('.title');
+          const sub = node.querySelector('.sub');
+          const desc = node.querySelector('.desc');
+          const tags = node.querySelector('.tags');
 
-    // 背景与清晰图
-    const bgUrl = buildSrc(data.bg || data.img, 1600);
-    section.dataset.bg = bgUrl;                              // 供视差使用
-    bgDiv.style.backgroundImage = `url("${bgUrl}")`;
+          // 背景与清晰图
+          const bgUrl = buildSrc(data.bg || data.img, 1600);
+          section.dataset.bg = bgUrl;              // 供视差使用
+          bgDiv.style.backgroundImage = `url("${bgUrl}")`;
 
-    imgEl.src = buildSrc(data.img, 1200);
-    imgEl.srcset = buildSrcSet(data.img);
-    imgEl.sizes = "(max-width: 920px) 92vw, 600px";
-    imgEl.loading = "lazy";
-    imgEl.decoding = "async";
-    imgEl.alt = data.title || "";
+          imgEl.src = buildSrc(data.img, 1200);
+          imgEl.srcset = buildSrcSet(data.img);
+          imgEl.sizes = "(max-width: 920px) 92vw, 600px";
+          imgEl.alt = data.title || "";
 
-    // EXIF
-    const exif = data.exif || {};
-    node.querySelector('.exif .focal').textContent   = exif.focal   || '';
-    node.querySelector('.exif .aperture').textContent= exif.aperture|| '';
-    node.querySelector('.exif .shutter').textContent = exif.shutter || '';
-    node.querySelector('.exif .iso').textContent     = exif.iso     || '';
+          // EXIF
+          const exif = data.exif || {};
+          node.querySelector('.exif .focal').textContent    = exif.focal    || '';
+          node.querySelector('.exif .aperture').textContent = exif.aperture || '';
+          node.querySelector('.exif .shutter').textContent  = exif.shutter  || '';
+          node.querySelector('.exif .iso').textContent      = exif.iso      || '';
 
-    // 文案
-    title.textContent = data.title || '';
-    sub.textContent   = data.subtitle || '';
-    //desc.textContent  = data.desc || ''; //转义写法
-    desc.innerHTML = data.desc || '';
-    tags.innerHTML = (data.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+          // 文案
+          title.textContent = data.title || '';
+          sub.textContent   = data.subtitle || '';
+          desc.innerHTML    = data.desc || ''; // 允许富文本
+          tags.innerHTML    = (data.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
 
-    frag.appendChild(node);
-  }
-  gallery.appendChild(frag);
-  cursor = end;
+          // ✅ 奇偶行切换布局
+          if (i % 2 === 0) section.classList.add('layout-left');
+          else section.classList.add('layout-right');
 
-  // 新增元素参与入场动画 & 视差观察
-  observeNewItems();
-  if(cursor >= PHOTOS.length){
-    document.getElementById('loadMore').disabled = true;
-    if(observerInfinite) observerInfinite.disconnect();
-  }
-}
+          frag.appendChild(node);
+        }
+        gallery.appendChild(frag);
+        cursor = end;
 
-/** ===== 5) 入场动画：一次性 reveal ===== */
-const ioReveal = new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      e.target.classList.add('in-view');
-      ioReveal.unobserve(e.target);
-    }
-  });
-},{threshold:.15, rootMargin:'0px 0px -10% 0px'});
-
-/** ===== 6) 视差：只对可见区块的 .bg 计算 transform，减少成本 ===== */
-const activeBGs = new Set();
-const ioParallax = new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{
-    const bg = e.target.querySelector('.bg');
-    if(!bg) return;
-    if(e.isIntersecting){ activeBGs.add(bg); }
-    else { activeBGs.delete(bg); }
-  });
-},{root:null, threshold:0, rootMargin:'200px 0px 200px 0px'}); // 提前/滞后一点
-
-function parallax(){
-  const scrollY = window.scrollY || window.pageYOffset;
-  activeBGs.forEach(bg=>{
-    const elTop = bg.parentElement.getBoundingClientRect().top + scrollY;
-    const offset = (scrollY - elTop) * 0.25;
-    bg.style.transform = `translateY(${offset}px) scale(1.08)`;
-  });
-}
-window.addEventListener('scroll', parallax, {passive:true});
-window.addEventListener('resize', parallax);
-
-/** ===== 7) 无限滚动（可选） ===== */
-let observerInfinite = null;
-function setupInfiniteScroll(){
-  const sentinel = document.getElementById('loadMore');
-  observerInfinite = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting && cursor < PHOTOS.length){
-        renderNextBatch();
+        // 新增元素参与入场动画 & 视差观察
+        observeNewItems();
+        if(cursor >= PHOTOS.length){
+          const btn = document.getElementById('loadMore');
+          if (btn) btn.disabled = true;
+          if(observerInfinite) observerInfinite.disconnect();
+        }
       }
-    });
-  },{root:null, threshold:0.1});
-  observerInfinite.observe(sentinel);
-}
 
-/** ===== 8) 把新加的项交给观察器 ===== */
-function observeNewItems(){
-  // 新增 section：给视差；新增 .reveal：给入场动画
-  document.querySelectorAll('section.work:not([data-obs])').forEach(sec=>{
-    sec.setAttribute('data-obs','1');
-    ioParallax.observe(sec);
-  });
-  document.querySelectorAll('.reveal:not(.in-view)').forEach(el=> ioReveal.observe(el));
-  // 初始刷新一次视差
-  parallax();
-}
+      /** ===== 5) 入场动画：一次性 reveal ===== */
+      const ioReveal = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            e.target.classList.add('in-view');
+            ioReveal.unobserve(e.target);
+          }
+        });
+      },{threshold:.15, rootMargin:'0px 0px -10% 0px'});
 
-/** ===== 9) 头尾背景注入（不参与批量） ===== */
-document.querySelectorAll('header, footer').forEach(el=>{
-  const bg = el.querySelector('.bg');
-  if(bg && el.dataset.bg){
-    bg.style.backgroundImage = `url("${el.dataset.bg}")`;
-  }
-});
+      /** ===== 6) 视差：只对可见区块的 .bg 计算 transform，降低成本 ===== */
+      const activeBGs = new Set();
+      const ioParallax = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          const bg = e.target.querySelector('.bg');
+          if(!bg) return;
+          if(e.isIntersecting){ activeBGs.add(bg); }
+          else { activeBGs.delete(bg); }
+        });
+      },{root:null, threshold:0, rootMargin:'200px 0px 200px 0px'}); // 提前/滞后一点更顺滑
 
-/** ===== 10) 事件：加载更多按钮 ===== */
-document.getElementById('loadMore').addEventListener('click', renderNextBatch);
+      function parallax(){
+        const scrollY = window.scrollY || window.pageYOffset;
+        activeBGs.forEach(bg=>{
+          const host = bg.parentElement; // section 或 header/footer
+          if (!host) return;
+          const rect = host.getBoundingClientRect();
+          const elTop = rect.top + scrollY;
+          const offset = (scrollY - elTop) * 0.25; // 视差强度
+          bg.style.transform = `translateY(${offset}px) scale(1.08)`;
+        });
+      }
+      window.addEventListener('scroll', parallax, {passive:true});
+      window.addEventListener('resize', parallax);
 
-/** ===== 11) 首次渲染 & 可选的无限滚动 ===== */
-renderNextBatch(); // 首批
-if(USE_INFINITE_SCROLL) setupInfiniteScroll();
+      /** ===== 7) 无限滚动（可选） ===== */
+      let observerInfinite = null;
+      function setupInfiniteScroll(){
+        const sentinel = document.getElementById('loadMore');
+        observerInfinite = new IntersectionObserver((entries)=>{
+          entries.forEach(e=>{
+            if(e.isIntersecting && cursor < PHOTOS.length){
+              renderNextBatch();
+            }
+          });
+        },{root:null, threshold:0.1});
+        observerInfinite.observe(sentinel);
+      }
+
+      /** ===== 8) 把新加的项交给观察器 ===== */
+      function observeNewItems(){
+        // 新增 section：给视差；新增 .reveal：给入场动画
+        document.querySelectorAll('section.work:not([data-obs])').forEach(sec=>{
+          sec.setAttribute('data-obs','1');
+          ioParallax.observe(sec);
+          // section 内的 reveal 元素
+          sec.querySelectorAll('.reveal:not(.in-view)').forEach(el=> ioReveal.observe(el));
+        });
+        // 初始刷新一次视差
+        parallax();
+      }
+
+      /** ===== 9) 头尾背景注入（不参与批量） ===== */
+      document.querySelectorAll('header, footer').forEach(el=>{
+        const bg = el.querySelector('.bg');
+        if(bg && el.dataset.bg){
+          bg.style.backgroundImage = `url("${el.dataset.bg}")`;
+          // 让头尾也参与视差（可见时才计算）
+          ioParallax.observe(el);
+        }
+      });
+
+      /** ===== 10) 事件：加载更多按钮 ===== */
+      document.getElementById('loadMore').addEventListener('click', renderNextBatch);
+
+      /** ===== 11) 首次渲染 & 可选的无限滚动 ===== */
+      renderNextBatch(); // 首批
+      if(USE_INFINITE_SCROLL) setupInfiniteScroll();
+
+
+
+

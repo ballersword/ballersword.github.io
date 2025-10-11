@@ -11,8 +11,8 @@
     <header data-bg="img/0.jpg">
       <div class="bg"></div>
       <div class="scrim"></div>
-      <h1 class="reveal in-view">摄影作品集</h1>
-      <p class="reveal delay-1 in-view">数据驱动批量渲染 · 懒加载 · 视差仅对可见项生效 · 分批加载 100+ 照片更流畅</p>
+      <h1 class="reveal in-view">黑白影调</h1>
+      <p class="reveal delay-1 in-view">我们无法判断一个瞬间的价值，直到它变成回忆</p>
     </header>
 
     <!-- 容器 -->
@@ -23,7 +23,7 @@
       <button id="loadMore" class="btn">加载更多</button>
     </div>
 
-    <footer>
+    <footer data-bg="img/0.jpg">
       <div class="bg"></div>
       <div class="scrim"></div>
       <p>© 2025 Ballersword · 保留所有权利</p>
@@ -37,9 +37,11 @@
         <div class="inner">
           <div class="photo-card reveal">
             <div class="photo-zoom" aria-label="悬停放大查看">
-              <img alt="" />
+              <img alt="" loading="lazy" decoding="async" />
               <div class="exif" role="note">
-                <span class="dot"></span> <span class="focal"></span><span class="divider">·</span> <span class="aperture"></span><span class="divider">·</span> <span class="shutter"></span><span class="divider">·</span>
+                <span class="dot"></span> <span class="focal"></span><span class="divider">·</span>
+                <span class="aperture"></span><span class="divider">·</span>
+                <span class="shutter"></span><span class="divider">·</span>
                 <span class="iso"></span>
               </div>
             </div>

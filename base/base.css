@@ -2,7 +2,6 @@
         --page-max: 1100px;
         --gap: clamp(16px, 3vw, 28px);
         --card-w: 600px;
-        --card-h: 400px;
         --radius: 2px;
         --shadow: 0px 0px 20px #0000007a;
         --text: #f3f3f3;
@@ -14,13 +13,12 @@
       html, body { height: 100%; }
       body {
         margin: 0;
-        background: #2e2e2e;
+        background: #0a0a0a;
         color: var(--text);
-        font: 16px/1.6 ui-sans-serif, -apple-system, Segoe UI, Roboto,
-          PingFang SC, Hiragino Sans GB, Microsoft YaHei, Noto Sans CJK, Arial, sans-serif;
+        font: 16px/1.6 ui-sans-serif, -apple-system, Segoe UI, Roboto, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Noto Sans CJK, Arial, sans-serif;
       }
 
-      /* ====== 顶部 ====== */
+      /* ===== 顶部 ===== */
       header {
         position: relative;
         padding: 18vh 5vw 10vh;
@@ -28,7 +26,7 @@
         overflow: hidden;
       }
       header h1 { margin: 0 0 8px; font-size: clamp(28px, 6vw, 56px); }
-      header p { margin: 0 auto; max-width: 800px; color: var(--muted); }
+      header p  { margin: 0 auto; max-width: 800px; color: var(--muted); }
 
       /* 背景与罩层（header/section/footer 共用） */
       .bg {
@@ -48,7 +46,7 @@
         z-index: -1;
       }
 
-      /* ====== 单组作品 ====== */
+      /* ===== 单组作品 ===== */
       section.work {
         position: relative;
         padding: clamp(64px, 10vh, 120px) 5vw;
@@ -56,38 +54,56 @@
       }
       .work .bg { opacity: 0.95; }
 
+      /* 两列：左/右分别是媒体区与文字区；用 grid-area 控制交错 */
       .inner {
         margin: 0 auto;
         max-width: var(--page-max);
         display: grid;
         grid-template-columns: 1fr 1fr;
-        align-items: center;
+        grid-template-areas: "media meta";
+        align-items: start;
         gap: var(--gap);
       }
+      .work.layout-right .inner {
+        grid-template-areas: "meta media";
+      }
+      .media { grid-area: media; }
+      .meta  { grid-area: meta; }
+
       @media (max-width: 920px) {
-        .inner { grid-template-columns: 1fr; }
+        .inner {
+          grid-template-columns: 1fr;
+          grid-template-areas:
+            "media"
+            "meta";
+        }
       }
 
+      /* 照片组：同一行展示多张 */
+      .photo-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--gap);
+      }
       .photo-card {
-        width: min(var(--card-w), 100%);
+        width: 100%;
         margin-inline: auto;
         contain: layout paint;
-        box-shadow: 0 0 30px #0000009c;
+    
       }
       .photo-zoom {
         position: relative;
         width: 100%;
-        height: 100%;
-        /* overflow: hidden; */
-        box-shadow: var(--shadow);
         transition: outline-color 0.35s ease, transform 0.35s ease;
         transform: translateZ(0);
         will-change: transform;
         background: #000;
         cursor: zoom-in;
-        border: 15px solid #fff;
+        border: 14px solid #fff;
         border-bottom: 60px solid #fff;
         border-radius: var(--radius);
+        box-shadow: 0 0 20px #00000078;
+        overflow: hidden;
       }
       .photo-zoom img {
         width: 100%; height: 100%; object-fit: cover; display: block;
@@ -98,11 +114,11 @@
       }
       @media (hover: hover) and (pointer: fine) {
         .photo-zoom:hover img { transform: scale(1.35); }
-        .photo-zoom:hover { outline-color: color-mix(in oklab, var(--border) 96%, transparent); }
-        .photo-zoom:hover .exif { opacity: 1; transform: none; }
+        .photo-zoom:hover { outline-color: color-mix(in oklab, var(--border) 96%, transparent);box-shadow: 0 0 20px #00000078; }
+        .photo-zoom:hover .local { opacity: 1; transform: none; }
       }
 
-      .exif {
+      .local {
         position: absolute; left: 14px; bottom: 14px;
         display: flex; gap: 10px; align-items: center;
         padding: 8px 12px; border-radius: 999px;
@@ -113,8 +129,7 @@
         transition: opacity .35s ease, transform .35s ease, backdrop-filter .35s ease;
         backdrop-filter: blur(4px); pointer-events: none;
       }
-      .exif .dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: 0.9; }
-      .exif .divider { opacity: .6; }
+    .local span{font-size: 14px;}
 
       .meta {
         background: color-mix(in oklab, var(--backdrop) 75%, transparent);
@@ -144,7 +159,7 @@
         .photo-zoom img, .reveal { transition: none !important; }
       }
 
-      /* 工具条 */
+      /* 工具条与页脚 */
       .toolbar { display: flex; justify-content: center; gap: 12px; padding: 24px; }
       .btn {
         appearance: none; border: 1px solid rgba(255,255,255,.2);
@@ -152,22 +167,4 @@
         padding: 10px 16px; border-radius: 10px; cursor: pointer;
       }
       .btn[disabled] { opacity: .5; cursor: default; }
-
-      /* 页脚 */
       footer { position: relative; padding: 14vh 5vw; text-align: center; color: var(--muted); }
-
-      /* ===== 奇偶数行左右交错布局 ===== */
-      .work.layout-left .inner { grid-template-columns: 1fr 1fr; }
-      .work.layout-right .inner { grid-template-columns: 1fr 1fr; direction: rtl; }
-      .work.layout-right .inner > * { direction: ltr; }
-      .work.layout-left .meta { text-align: left; }
-      /* .work.layout-right .meta { text-align: right; } */
-
-      @media (max-width: 920px) {
-        .work.layout-right .inner,
-        .work.layout-left .inner {
-          direction: ltr;
-          grid-template-columns: 1fr;
-        }
-        .work.layout-right .meta, .work.layout-left .meta { text-align: left; }
-      }

@@ -49,7 +49,16 @@
         </div>
       </section>
     </template>
-
+    
+<!-- 全屏查看（Lightbox） -->
+<div id="lightbox" class="lb" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="lb-backdrop" data-close="1"></div>
+  <figure class="lb-figure">
+    <img id="lb-img" alt="" />
+    <figcaption id="lb-caption"></figcaption>
+    <button class="lb-close" type="button" aria-label="关闭" data-close="1">×</button>
+  </figure>
+</div>
     <script src="base/base.js"></script>
   </body>
 </html>

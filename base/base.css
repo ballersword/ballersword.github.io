@@ -193,7 +193,7 @@
   max-width: 100%; max-height: 100%; display: block;
   border-radius: 4px; box-shadow: 0 20px 60px rgba(0,0,0,.55);
   cursor: zoom-out; /* 语义化：点图也能关闭 */
-  margin: 0 auto;
+  position: absolute;left: 50%;top:50%;transform: translate(-50%,-50%);
 }
 #lb-caption {
   margin-top: 8px; color: #ddd; font-size: 14px; text-align: center;

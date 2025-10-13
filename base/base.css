@@ -176,3 +176,34 @@
       }
       .btn[disabled] { opacity: .5; cursor: default; }
       footer { position: relative; padding: 14vh 5vw; text-align: center; color: var(--muted); }
+
+/* ===== Lightbox 全屏查看 ===== */
+      body.no-scroll { overflow: hidden; }
+
+.lb {
+  position: fixed; inset: 0; z-index: 9999;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.85);
+}
+.lb.show { display: flex; animation: lb-in .18s ease; }
+@keyframes lb-in { from { opacity: 0 } to { opacity: 1 } }
+
+ .lb-figure { position: relative;/* max-width: 94vw; max-height: 94vh; */width: 94vw;  height: 94vh;}
+#lb-img {
+  max-width: 100%; max-height: 100%; display: block;
+  border-radius: 4px; box-shadow: 0 20px 60px rgba(0,0,0,.55);
+  cursor: zoom-out; /* 语义化：点图也能关闭 */
+  margin: 0 auto;
+}
+#lb-caption {
+  margin-top: 8px; color: #ddd; font-size: 14px; text-align: center;
+}
+.lb-backdrop { position: absolute; inset: 0; }
+.lb-close {
+  position: absolute; top: -12px; right: -12px;
+  width: 36px; height: 36px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(0,0,0,.55); color: #fff; font-size: 20px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}

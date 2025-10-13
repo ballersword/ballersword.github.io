@@ -104,7 +104,7 @@
         transition: outline-color 0.35s ease, transform 0.35s ease;
         transform: translateZ(0);
         will-change: transform;
-        background: #000;
+        background: #ffffff;
         cursor: zoom-in;
         border: 14px solid #fff;
         border-bottom: 60px solid #fff;
@@ -118,6 +118,7 @@
         transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
         will-change: transform;
         content-visibility: auto;
+        border-radius: 3px;
       }
       @media (hover: hover) and (pointer: fine) {
         .photo-zoom:hover img { transform: scale(1.35); }

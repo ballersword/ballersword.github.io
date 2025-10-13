@@ -177,19 +177,24 @@
       const tpl = document.getElementById('work-tpl');
       let cursor = 0;
 
-      function createPhotoCard(src, local, altText = "") {
-        const card = document.createElement('div');
-        card.className = 'photo-card reveal';
-        card.innerHTML = `
-          <div class="photo-zoom" aria-label="悬停放大查看">
-            <img src="${buildSrc(src, 1200)}" srcset="${buildSrcSet(src)}" sizes="(max-width: 920px) 92vw, 600px" alt="${altText}" loading="lazy" decoding="async" />
-            <div class="local" role="note">
-              <span>${local}</span>
-            </div>
-          </div>
-        `;
-        return card;
-      }
+   function createPhotoCard(src, local, altText = "") {
+  const card = document.createElement('div');
+  card.className = 'photo-card reveal';
+  card.innerHTML = `
+    <div class="photo-zoom" aria-label="悬停放大查看">
+      <img
+        src="${buildSrc(src, 1200)}"
+        srcset="${buildSrcSet(src)}"
+        sizes="(max-width: 920px) 92vw, 600px"
+        alt="${altText}"
+        loading="lazy"
+        decoding="async"
+        data-full="${src}" />
+      <div class="local" role="note"><span>${local}</span></div>
+    </div>
+  `;
+  return card;
+}
 
       function renderNextBatch() {
         const frag = document.createDocumentFragment();
@@ -311,3 +316,58 @@
       /** ===== 11) 首次渲染 & 可选无限滚动 ===== */
       renderNextBatch();
       if (USE_INFINITE_SCROLL) setupInfiniteScroll();
+
+
+
+      /** ===== Lightbox（点击图片全屏） ===== */
+const lb = document.getElementById('lightbox');
+const lbImg = document.getElementById('lb-img');
+const lbCaption = document.getElementById('lb-caption');
+
+function openLightbox(rawSrc, altText) {
+  // 若有更大图，这里可以换更大的目标宽度
+  const full = buildSrc(rawSrc, 2000);
+  const fullSet = buildSrcSet(rawSrc);
+
+  lbImg.src = full;
+  if (fullSet) lbImg.srcset = fullSet; else lbImg.removeAttribute('srcset');
+  lbImg.alt = altText || '';
+
+  lb.classList.add('show');
+  lb.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('no-scroll');
+
+  // 可选：显示标题当作说明
+  lbCaption.textContent = altText || '';
+}
+
+function closeLightbox() {
+  lb.classList.remove('show');
+  lb.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('no-scroll');
+  // 释放资源（可选）
+  lbImg.removeAttribute('src');
+  lbImg.removeAttribute('srcset');
+}
+
+// 事件代理：点击图片打开
+gallery.addEventListener('click', (e) => {
+  const zoom = e.target.closest('.photo-zoom');
+  if (!zoom) return;
+  const img = zoom.querySelector('img');
+  if (!img) return;
+
+  const raw = img.getAttribute('data-full') || img.currentSrc || img.src;
+  openLightbox(raw, img.alt || '');
+});
+
+// 点击空白或“×”关闭；点图本身也可关闭（cursor: zoom-out）
+lb.addEventListener('click', (e) => {
+  if (e.target === lbImg) return closeLightbox();
+  if (e.target.dataset.close === '1') return closeLightbox();
+});
+
+// ESC 关闭
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && lb.classList.contains('show')) closeLightbox();
+});

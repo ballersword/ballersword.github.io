@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>全部照片 · 黑白影调</title>
+    <link rel="preconnect" href="img/0.jpg" crossorigin />
+    <link rel="stylesheet" href="base/base.css" />
+    <style>
+      /* ===== 瀑布流（CSS columns 方案，兼容性好） ===== */
+      .masonry {
+        --col-width: 320px;         /* 期望列宽 */
+        --gap: 16px;
+        column-width: var(--col-width);
+        column-gap: var(--gap);
+        max-width: min(1400px, 94vw);
+        margin: 40px auto;
+        padding: 0;
+      }
+      .masonry-item {
+        break-inside: avoid;
+        margin: 0 0 var(--gap) 0;
+        display: inline-block;
+        width: 100%;
+      }
+
+      /* 卡片与图像 */
+      .photo-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 2px;
+        box-shadow: 0 0 20px #0000006c;
+        background: #111;
+      }
+      .photo-card img {
+        width: 100%;
+        height: auto;
+        display: block;
+        transform: translateZ(0);
+        transition: transform .6s ease;
+      }
+      .photo-card:hover img {
+        transform: scale(1.03);
+      }
+      .photo-card figcaption {
+        font-size: 12px;
+        line-height: 1.4;
+        color: #d0d0d0;
+        padding: 8px 10px 10px;
+        border-top: 1px solid #ffffff20;
+      }
+
+      /* 顶部横幅（静态背景） */
+      header {
+        position: relative;
+        min-height: 36vh;
+        display: grid;
+        place-content: center;
+        text-align: center;
+        color: #fff;
+      }
+      header .bg {
+        position: absolute; inset: 0;
+        background-size: cover;
+        background-position: center;
+        filter: brightness(.7);
+        z-index: -2;
+      }
+      header .scrim {
+        position: absolute; inset: 0;
+        background: linear-gradient(#00000060, #000000c0);
+        z-index: -1;
+      }
+      header h1 { font-size: clamp(28px, 4.8vw, 56px); margin: 0 0 .4em; }
+      header p  { opacity: .9; margin: 0 0 1.2em; }
+
+      .top-links {
+        margin-top: .5rem;
+      }
+      .top-links a {
+        color: #fff; text-decoration: none; border-bottom: 1px solid #ffffff66;
+        padding-bottom: 2px;
+        transition: .25s;
+      }
+      .top-links a:hover { color: #ffd; border-color: #ffd; }
+
+      /* 轻量 Lightbox 基础（复用你的类名） */
+      .lb[aria-hidden="true"] { display: none; }
+      .lb[aria-hidden="false"] { display: grid; }
+      .lb {
+        position: fixed; inset: 0; z-index: 9999;
+        place-items: center;
+      }
+      .lb-backdrop {
+        position: absolute; inset: 0; background: #000000e6;
+      }
+      .lb-figure {
+        position: relative; max-width: min(92vw, 1400px); max-height: 92vh;
+        display: grid; grid-template-rows: 1fr auto; gap: 8px;
+        padding: 8px;
+      }
+      .lb-figure img {
+        max-width: 100%; max-height: 82vh; object-fit: contain; display: block;
+      }
+      .lb-figure figcaption {
+        color: #ddd; font-size: 14px; text-align: center;
+      }
+      .lb-close {
+        position: absolute; top: -8px; right: -8px;
+        width: 36px; height: 36px; border: none; border-radius: 50%;
+        background: #000000aa; color: #fff; font-size: 20px; cursor: pointer;
+      }
+
+      footer {
+        margin-top: 32px;
+        text-align: center;
+        color: #cfcfcf;
+        padding: 24px 12px 40px;
+        border-top: 1px solid #ffffff1f;
+      }
+
+      /* 小屏优化 */
+      @media (max-width: 520px) {
+        .masonry { --col-width: 220px; --gap: 12px; margin: 24px auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="bg" style="background-image:url('img/0.jpg')"></div>
+      <div class="scrim"></div>
+      <h1>全部照片</h1>
+      <p>瀑布流一次性展示项目中的所有图片</p>
+      <div class="top-links">
+        <a href="./">← 返回首页</a>
+      </div>
+    </header>
+
+    <!-- 瀑布流容器 -->
+    <main id="masonry" class="masonry" aria-live="polite"></main>
+
+    <footer>
+      <p>© 2025 Ballersword · 保留所有权利</p>
+    </footer>
+
+    <!-- 轻量 Lightbox -->
+    <div id="lightbox" class="lb" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="lb-backdrop" data-close="1"></div>
+      <figure class="lb-figure">
+        <img id="lb-img" alt="" />
+        <figcaption id="lb-caption"></figcaption>
+        <button class="lb-close" type="button" aria-label="关闭" data-close="1">×</button>
+      </figure>
+    </div>
+
+    <script>
+      /**
+       * 读取照片数据：
+       * - 推荐把你主项目里使用的 JSON 抽成独立文件：/photos.json（或 data/photos.json）
+       * - 结构支持：{ title, subtitle, desc(html可选), img } 或 { ..., imgs: [ ... ] }
+       *   单张用 img，多张用 imgs，二者任一存在即可
+       */
+      const DATA_URLS = [
+        'photos.json',           // 优先：与 all.html 同目录
+        'base/photos.json'       // 备选：在 data/ 目录
+      ];
+
+      async function loadPhotos() {
+        for (const url of DATA_URLS) {
+          try {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) continue;
+            const json = await res.json();
+            if (Array.isArray(json)) return json;
+          } catch (e) { /* 继续试下一个路径 */ }
+        }
+        console.error('未找到 photos.json，请将你的照片数据放到同目录或 data/ 下。');
+        return [];
+      }
+
+      /** 将 {img}/{imgs} 摊平为单张图片条目 */
+      function flattenToImages(PHOTOS) {
+        const out = [];
+        for (const item of PHOTOS) {
+          const { title='', subtitle='', desc='', local='' } = item || {};
+          const caption = [title, subtitle].filter(Boolean).join(' · ');
+          if (Array.isArray(item.imgs)) {
+            for (const src of item.imgs) out.push({ src, caption, desc, local });
+          }
+          if (item.img) out.push({ src: item.img, caption, desc, local });
+        }
+        return out;
+      }
+
+      /** 生成单个卡片 DOM */
+      function createMasonryCard({ src, caption }) {
+        const wrap = document.createElement('div');
+        wrap.className = 'masonry-item';
+        const fig = document.createElement('figure');
+        fig.className = 'photo-card';
+        const img = document.createElement('img');
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.src = src;
+        img.alt = caption || '';
+        img.dataset.caption = caption || '';
+        fig.appendChild(img);
+
+        if (caption) {
+          const fc = document.createElement('figcaption');
+          fc.textContent = caption;
+          fig.appendChild(fc);
+        }
+        wrap.appendChild(fig);
+        return wrap;
+      }
+
+      /** 渲染全部图片到瀑布流 */
+      async function renderAll() {
+        const container = document.getElementById('masonry');
+        const PHOTOS = await loadPhotos();
+        const images = flattenToImages(PHOTOS);
+        const frag = document.createDocumentFragment();
+        for (const it of images) frag.appendChild(createMasonryCard(it));
+        container.appendChild(frag);
+      }
+
+      /** 简易 Lightbox（点击图片放大） */
+      function setupLightbox() {
+        const lb = document.getElementById('lightbox');
+        const lbImg = document.getElementById('lb-img');
+        const lbCap = document.getElementById('lb-caption');
+
+        document.getElementById('masonry').addEventListener('click', e => {
+          const img = e.target.closest('img');
+          if (!img) return;
+          lbImg.src = img.currentSrc || img.src;
+          lbImg.alt = img.alt || '';
+          lbCap.textContent = img.dataset.caption || img.alt || '';
+          lb.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+        });
+
+        lb.addEventListener('click', e => {
+          if (e.target.dataset.close) {
+            lb.setAttribute('aria-hidden', 'true');
+            lbImg.src = '';
+            document.body.style.overflow = '';
+          }
+        });
+
+        window.addEventListener('keydown', e => {
+          if (e.key === 'Escape' && lb.getAttribute('aria-hidden') === 'false') {
+            lb.setAttribute('aria-hidden', 'true');
+            lbImg.src = '';
+            document.body.style.overflow = '';
+          }
+        });
+      }
+
+      // 启动
+      renderAll();
+      setupLightbox();
+    </script>
+  </body>
+</html>

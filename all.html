@@ -184,7 +184,7 @@
         const out = [];
         for (const item of PHOTOS) {
           const { title='', subtitle='', desc='', local='' } = item || {};
-          const caption = [title, subtitle].filter(Boolean).join(' · ');
+          const caption = [title, subtitle].filter(Boolean).join(' --- ');
           if (Array.isArray(item.imgs)) {
             for (const src of item.imgs) out.push({ src, caption, desc, local });
           }

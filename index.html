@@ -17,21 +17,16 @@
       <a href="all.html" class="reveal delay-2 in-view all-link">全部回忆 →</a>
     </header>
 
-    <!-- 容器 -->
     <main id="gallery"></main>
-
-    <!-- 加载更多 / 无限滚动触发器 -->
     <div class="toolbar">
       <button id="loadMore" class="btn">加载更多</button>
     </div>
 
     <footer>
-      <!-- <div class="bg"></div> -->
       <div class="scrim"></div>
       <p>© 2025 Ballersword · 保留所有权利</p>
     </footer>
 
-    <!-- section 模板（媒体区 + 文字区） -->
     <template id="work-tpl">
       <section class="work" data-bg="">
         <div class="bg"></div>
@@ -39,7 +34,6 @@
         <div class="inner">
           <div class="media">
             <div class="photo-group">
-              <!-- JS 动态插入多个 .photo-card -->
             </div>
           </div>
           <aside class="meta reveal delay-1">
@@ -52,7 +46,6 @@
       </section>
     </template>
 
-    <!-- 全屏查看（Lightbox） -->
     <div id="lightbox" class="lb" role="dialog" aria-modal="true" aria-hidden="true">
       <div class="lb-backdrop" data-close="1"></div>
       <figure class="lb-figure">

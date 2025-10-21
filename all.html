@@ -8,8 +8,9 @@
     <link rel="preconnect" href="img/0.jpg" crossorigin />
     <link rel="stylesheet" href="base/base.css" />
     <style>
+      /* ===== 瀑布流（CSS columns 方案，兼容性好） ===== */
       .masonry {
-        --col-width: 320px;
+        --col-width: 320px;         /* 期望列宽 */
         --gap: 16px;
         column-width: var(--col-width);
         column-gap: var(--gap);
@@ -23,6 +24,8 @@
         display: inline-block;
         width: 100%;
       }
+
+      /* 卡片与图像 */
       .photo-card {
         position: relative;
         overflow: hidden;
@@ -47,6 +50,8 @@
         padding: 8px 10px 10px;
         border-top: 1px solid #ffffff20;
       }
+
+      /* 顶部横幅（静态背景） */
       header {
         position: relative;
         min-height: 36vh;
@@ -69,6 +74,7 @@
       }
       header h1 { font-size: clamp(28px, 4.8vw, 56px); margin: 0 0 .4em; }
       header p  { opacity: .9; margin: 0 0 1.2em; }
+
       .top-links {
         margin-top: .5rem;
       }
@@ -78,6 +84,8 @@
         transition: .25s;
       }
       .top-links a:hover { color: #ffd; border-color: #ffd; }
+
+      /* 轻量 Lightbox 基础（复用你的类名） */
       .lb[aria-hidden="true"] { display: none; }
       .lb[aria-hidden="false"] { display: grid; }
       .lb {
@@ -103,6 +111,7 @@
         width: 36px; height: 36px; border: none; border-radius: 50%;
         background: #000000aa; color: #fff; font-size: 20px; cursor: pointer;
       }
+
       footer {
         margin-top: 32px;
         text-align: center;
@@ -110,6 +119,8 @@
         padding: 24px 12px 40px;
         border-top: 1px solid #ffffff1f;
       }
+
+      /* 小屏优化 */
       @media (max-width: 520px) {
         .masonry { --col-width: 220px; --gap: 12px; margin: 24px auto; }
       }
@@ -126,12 +137,47 @@
       </div>
     </header>
 
+    <!-- 瀑布流容器 -->
     <main id="masonry" class="masonry" aria-live="polite"></main>
 
     <footer>
+       <div id="music-player" style="text-align: center; margin-top: 2em">
+        <audio id="bgm" autoplay loop muted>
+          <source src="base/HappyWorldWithMochi - Butterfly [Contemporary Classical].mp3" type="audio/mpeg" />
+        </audio>
+      </div>
+
+      <script>
+        // 当用户点击任意处时，取消静音
+        document.addEventListener(
+          "click",
+          () => {
+            const bgm = document.getElementById("bgm");
+            if (bgm.muted) {
+              bgm.muted = false;
+              bgm.volume = 0.4;
+              bgm.play();
+            }
+          },
+          { once: true }
+        );
+      </script>
+      <div class="license">
+        <p>🎵 音乐版权声明 Music Credits</p>
+        <p>
+          “<a href="https://freemusicarchive.org/music/happyworldwithmochi/symphony-20-contemporary-classical/butterfly-contemporary-classical/" target="_blank" rel="noopener noreferrer">Butterfly (Contemporary Classical)</a>” — by <strong>HappyWorldWithMochi</strong>
+          — licensed under
+          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>.
+        </p>
+        <p style="margin: 0.5em auto">
+          本站音乐依据知识共享署名 4.0 国际许可协议使用。<br />
+          This music is used under the Creative Commons Attribution 4.0 International License.
+        </p>
+      </div>
       <p>© 2025 Ballersword · 保留所有权利</p>
     </footer>
 
+    <!-- 轻量 Lightbox -->
     <div id="lightbox" class="lb" role="dialog" aria-modal="true" aria-hidden="true">
       <div class="lb-backdrop" data-close="1"></div>
       <figure class="lb-figure">
@@ -142,10 +188,15 @@
     </div>
 
     <script>
-    
+      /**
+       * 读取照片数据：
+       * - 推荐把你主项目里使用的 JSON 抽成独立文件：/photos.json（或 data/photos.json）
+       * - 结构支持：{ title, subtitle, desc(html可选), img } 或 { ..., imgs: [ ... ] }
+       *   单张用 img，多张用 imgs，二者任一存在即可
+       */
       const DATA_URLS = [
-        'photos.json',          
-        'base/photos.json'     
+        'photos.json',           // 优先：与 all.html 同目录
+        'base/photos.json'       // 备选：在 data/ 目录
       ];
 
       async function loadPhotos() {
@@ -155,12 +206,13 @@
             if (!res.ok) continue;
             const json = await res.json();
             if (Array.isArray(json)) return json;
-          } catch (e) { }
+          } catch (e) { /* 继续试下一个路径 */ }
         }
         console.error('未找到 photos.json，请将你的照片数据放到同目录或 data/ 下。');
         return [];
       }
 
+      /** 将 {img}/{imgs} 摊平为单张图片条目 */
       function flattenToImages(PHOTOS) {
         const out = [];
         for (const item of PHOTOS) {
@@ -174,6 +226,7 @@
         return out;
       }
 
+      /** 生成单个卡片 DOM */
       function createMasonryCard({ src, caption }) {
         const wrap = document.createElement('div');
         wrap.className = 'masonry-item';
@@ -196,7 +249,7 @@
         return wrap;
       }
 
-  
+      /** 渲染全部图片到瀑布流 */
       async function renderAll() {
         const container = document.getElementById('masonry');
         const PHOTOS = await loadPhotos();
@@ -206,6 +259,7 @@
         container.appendChild(frag);
       }
 
+      /** 简易 Lightbox（点击图片放大） */
       function setupLightbox() {
         const lb = document.getElementById('lightbox');
         const lbImg = document.getElementById('lb-img');
@@ -238,6 +292,7 @@
         });
       }
 
+      // 启动
       renderAll();
       setupLightbox();
     </script>

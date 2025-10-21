@@ -328,3 +328,6 @@ body.no-scroll {
   cursor: pointer;
   backdrop-filter: blur(4px);
 }
+
+ .license{opacity: 0.6;margin-bottom: 3rem;}
+ .license a{color: #86a6c3;}

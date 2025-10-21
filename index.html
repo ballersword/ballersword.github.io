@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>黑白影调</title>
-    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
     <link rel="preconnect" href="img/0.jpg" crossorigin />
     <link rel="stylesheet" href="base/base.css" />
   </head>
@@ -17,16 +17,54 @@
       <a href="all.html" class="reveal delay-2 in-view all-link">全部回忆 →</a>
     </header>
 
+    <!-- 容器 -->
     <main id="gallery"></main>
+
+    <!-- 加载更多 / 无限滚动触发器 -->
     <div class="toolbar">
       <button id="loadMore" class="btn">加载更多</button>
     </div>
 
     <footer>
+      <div id="music-player" style="text-align: center; margin-top: 2em">
+        <audio id="bgm" autoplay loop muted>
+          <source src="base/HappyWorldWithMochi - Butterfly [Contemporary Classical].mp3" type="audio/mpeg" />
+        </audio>
+      </div>
+
+      <script>
+        // 当用户点击任意处时，取消静音
+        document.addEventListener(
+          "click",
+          () => {
+            const bgm = document.getElementById("bgm");
+            if (bgm.muted) {
+              bgm.muted = false;
+              bgm.volume = 0.4;
+              bgm.play();
+            }
+          },
+          { once: true }
+        );
+      </script>
+      <!-- <div class="bg"></div> -->
       <div class="scrim"></div>
+      <div class="license">
+        <p>🎵 音乐版权声明 Music Credits</p>
+        <p>
+          “<a href="https://freemusicarchive.org/music/happyworldwithmochi/symphony-20-contemporary-classical/butterfly-contemporary-classical/" target="_blank" rel="noopener noreferrer">Butterfly (Contemporary Classical)</a>” — by <strong>HappyWorldWithMochi</strong>
+          — licensed under
+          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>.
+        </p>
+        <p style="margin: 0.5em auto">
+          本站音乐依据知识共享署名 4.0 国际许可协议使用。<br />
+          This music is used under the Creative Commons Attribution 4.0 International License.
+        </p>
+      </div>
       <p>© 2025 Ballersword · 保留所有权利</p>
     </footer>
 
+    <!-- section 模板（媒体区 + 文字区） -->
     <template id="work-tpl">
       <section class="work" data-bg="">
         <div class="bg"></div>
@@ -34,6 +72,7 @@
         <div class="inner">
           <div class="media">
             <div class="photo-group">
+              <!-- JS 动态插入多个 .photo-card -->
             </div>
           </div>
           <aside class="meta reveal delay-1">
@@ -46,6 +85,7 @@
       </section>
     </template>
 
+    <!-- 全屏查看（Lightbox） -->
     <div id="lightbox" class="lb" role="dialog" aria-modal="true" aria-hidden="true">
       <div class="lb-backdrop" data-close="1"></div>
       <figure class="lb-figure">
